@@ -32,7 +32,6 @@ class FileHandler:
 class CsvHandler(FileHandler):
     def __init__(self):
         super().__init__()
-        self.read_file()
 
     def read_file(self):  # czyta i wstawia zawartość pliku do listy list (atrybutu klasy) lista[wiersz][element]
         list_of_lines = []
@@ -52,7 +51,6 @@ class CsvHandler(FileHandler):
 class JsonHandler(FileHandler):
     def __init__(self):
         super().__init__()
-        self.read_file()
 
     def read_file(self):
         with open(self.input_file, "r") as jsonfile:
@@ -61,13 +59,13 @@ class JsonHandler(FileHandler):
 
     def save_file(self):
         with open(self.output_file, "w") as jsonfile:
-            json.dump(self.list_of_lines, jsonfile)
+            jsonfile.write(json.dumps(self.list_of_lines))
+            # json.dump(self.list_of_lines, jsonfile)
 
 
 class PickleHandler(FileHandler):
     def __init__(self):
         super().__init__()
-        self.read_file()
 
     def read_file(self):
         with open(self.input_file, "rb") as picklefile:
@@ -100,21 +98,24 @@ def check_file_type(path):
 def create_handler(path):
     extension = check_file_type(path)
     if extension == 'csv':
-        reader = CsvHandler()
+        handler = CsvHandler()
     elif extension == 'json':
-        reader = JsonHandler()
-    elif extension == 'pickle':
-        reader = PickleHandler()
+        handler = JsonHandler()
     else:
-        return False
-    return reader
+        handler = PickleHandler()
+    # elif extension == 'pickle':
+    #     handler = PickleHandler()
+    # else:
+    #     return False  # i don't like it, i would like to make exception and ask user to pick up another filetype
+    return handler
 
 
 # ------------------------------------------------------------------------
 if not check_if_exists():
     print(f'No such file. Available files: {show_directory()}')
 else:
-    my_reader = create_handler(input_file_path)
+    my_reader = create_handler(input_file_path)  # i don't like that i have to use global variable here
+    my_reader.read_file()
     if not my_reader:
         print(f'We do not handle this filetype. Choose csv, json or pickle.')
     print(f'lista zmian: {my_reader.list_of_changes}')
@@ -123,5 +124,6 @@ else:
               f'and maximum index of column is {len(my_reader.list_of_lines[0]) - 1}')
     my_writer = create_handler(output_file_path)
     my_writer.list_of_lines = my_reader.list_of_lines
+    print(f'lista wierszy: {my_writer.list_of_lines}')
     my_writer.save_file()
 
